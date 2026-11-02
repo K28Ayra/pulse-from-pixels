@@ -58,6 +58,20 @@ deep_tracking:
   jump: 0.0
   sharpen: 2
 
+# webcam app (scripts/live.py, pulsecam/live.py), docs/phase7.md
+live:
+  model: models/factorizephys.onnx
+  threads: 2
+  # the first windows are shorter than window.length_s so a number shows up sooner;
+  # the model needs 161 frames, about 5.4 s at 30 fps
+  first_window_s: 6
+  # seconds of pulse that get band-pass filtered for each window
+  buffer_s: 20
+  # windows of delay before the tracker commits (one window per step_s)
+  lag_s: 5
+  # a face missing for longer than this starts everything again
+  face_lost_reset_s: 1.0
+
 # chosen in phase 4, docs/phase4.md: share of the fused spectrum within 5 bpm of the
 # tracked HR. Below the cutoff the reading is flagged as not to be trusted.
 quality:

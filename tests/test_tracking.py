@@ -1,6 +1,6 @@
 import numpy as np
 
-from pulsecam.tracking import viterbi_track
+from pulsecam.tracking import OnlineTracker, viterbi_track
 
 
 def peaked_spectra(bpm, path, width=2.0):
@@ -59,3 +59,19 @@ def test_jump_lets_the_track_follow_a_sudden_change():
     assert abs(moved[0] - bpm[30]) < 1
     assert abs(np.abs(np.diff(moved)).max() - 30) < 1
     assert np.abs(np.diff(stuck)).max() < 30
+
+
+def test_online_tracker_matches_offline():
+    bpm = np.arange(42, 211, 1.0)
+    rng = np.random.default_rng(0)
+    spectra = rng.random((40, len(bpm))) ** 8
+    for lag in [0, 1, 5]:
+        offline = viterbi_track(bpm, spectra, sigma_bpm=2.0, lag=lag, jump=0.01)
+        tracker = OnlineTracker(bpm, sigma_bpm=2.0, lag=lag, jump=0.01)
+        for t in range(len(spectra)):
+            index, hr = tracker.step(spectra[t])
+            if t >= lag:
+                assert index == t - lag
+                assert hr == offline[t - lag]
+            else:
+                assert index == 0

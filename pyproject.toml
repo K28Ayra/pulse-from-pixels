@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest", "opencv-python-headless", "mediapipe", "scikit-learn"]
+test = ["pytest", "opencv-python-headless", "mediapipe", "scikit-learn", "onnxruntime"]
 
 [tool.setuptools]
 packages = ["pulsecam"]

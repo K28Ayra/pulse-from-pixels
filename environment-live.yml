@@ -1,5 +1,5 @@
 # Small environment for the webcam demo on a laptop (Windows works).
-# No torch: the live pipeline is classical signal processing plus MediaPipe.
+# No torch: the deep model runs through onnxruntime (models/factorizephys.onnx).
 name: pulsecam-live
 channels:
   - conda-forge
@@ -14,4 +14,5 @@ dependencies:
   - pip:
       - opencv-contrib-python==4.10.0.84
       - mediapipe==1.2.0
+      - onnxruntime==1.22.0
       - -e .

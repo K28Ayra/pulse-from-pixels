@@ -25,12 +25,15 @@ The deep model (FactorizePhys) runs from rPPG-Toolbox, which wants its own older
 ./setup_tools.sh --toolbox-env
 ```
 
-For the webcam demo there's a smaller env without torch. It works on Windows too:
+For the webcam app there's a smaller env without torch. It works on Windows too:
 
 ```bash
 conda env create -f environment-live.yml
 conda activate pulsecam-live
+python scripts/live.py        # q to quit
 ```
+
+The app needs `models/face_landmarker.task` and `models/factorizephys.onnx`. The second one is made by `./setup_tools.sh --toolbox-env` and isn't in git, so on a laptop without that env you copy `models/` over.
 
 ## Data
 
@@ -88,11 +91,18 @@ python scripts/evaluate_phase1.py
 
 That run takes about 1.5 h on one GPU. Most of it is the toolbox cropping every video again for each model.
 
+The webcam app also plays files, which is how I tested it without a camera:
+
+```bash
+python scripts/live.py --video data/ubfc_rppg/DATASET_2/subject1/vid.avi --no-window
+python scripts/evaluate_phase7.py replay
+```
+
 ## How it's put together
 
 `pulsecam/` is the package and `scripts/` just calls it. All settings live in `configs/default.yaml`. The tracker settings, the quality cutoff and the list of UBFC-Phys recordings that rPPG-Toolbox excludes are all there.
 
-`live_mode` is false for datasets. The webcam app sets it to true.
+`live_mode` is false for datasets. The webcam app sets it to true, and from then on Python refuses any file write or network call (`pulsecam/privacy.py`).
 
 Everything gets scored the same way. HR comes from 10 s windows every 1 s and is compared with HR from the contact pulse in the same window. A window only counts if that reference looks clean. Settings are picked by person-wise cross-validation on dev people.
 
@@ -135,3 +145,15 @@ The flag is the share of the spectrum within 5 bpm of the reported HR. Below 0.4
 [docs/phase5.md](docs/phase5.md)
 
 FactorizePhys with my tracker beats the classical pipeline, 1.02 bpm per person against 1.16. Taking parts away one at a time, only the tracker is clearly needed. Both pipelines go into phase 6.
+
+### Phase 6: stress tests
+
+[docs/phase6.md](docs/phase6.md)
+
+Same dev videos, re-encoded with x264 from 4000 down to 250 kbps and dimmed to half and a quarter. Compression is what hurts. On UBFC-rPPG the classical pipeline goes from 0.81 to 2.40 at 4000k and stops working below 1000k, while FactorizePhys still reads 1.5 bpm at 250k. Dim light barely matters. Both stay flat with motion where POS doesn't. The skin-tone split is weak: two people are darker than "intermediate", and skin tone and dataset are tangled together. Deep goes into the app.
+
+### Phase 7: webcam app
+
+[docs/phase7.md](docs/phase7.md)
+
+`scripts/live.py` runs FactorizePhys through onnxruntime, so there's no torch. The first number shows up after 6 s, because the first windows are shorter. Played back through the live code, the dev videos come out at 0.80 bpm against 0.77 offline. On 4 CPU cores it does 163 fps flat out, and paced at 30 fps no frame gets dropped, because the model runs in its own thread. I haven't tried it on a laptop or a real webcam yet.

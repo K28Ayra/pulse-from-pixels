@@ -3,6 +3,7 @@
 #   tools/rPPG-Toolbox            baselines, pinned commit, only the PURE checkpoints
 #   models/face_landmarker.task   MediaPipe face landmark model
 #   envs/rppg-toolbox             the toolbox's own env (python 3.8), only with --toolbox-env
+#   models/factorizephys.onnx     the deep model for the webcam app, also only with --toolbox-env
 # Safe to re-run; finished steps are skipped.
 set -e
 cd "$(dirname "$0")"
@@ -65,6 +66,10 @@ if [ "$1" = "--toolbox-env" ]; then
     # and they need a CUDA compiler to build
     grep -v -E "mamba-ssm|causal-conv1d" tools/rPPG-Toolbox/requirements.txt > .cache/toolbox_requirements.txt
     retry $py -m pip install -r .cache/toolbox_requirements.txt
+    retry $py -m pip install onnx==1.16.2 onnxruntime==1.18.1
+    if [ ! -f models/factorizephys.onnx ]; then
+        $py scripts/export_onnx.py
+    fi
 fi
 
 echo "tools ready"
