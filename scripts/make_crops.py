@@ -12,7 +12,7 @@ import numpy as np
 
 from pulsecam.config import load_config
 from pulsecam.datasets import UBFC_PHYS_TASKS, iter_frames
-from reduce_ubfc_phys import BOX_EVERY, crop_box, face_crop
+from pulsecam.face import BOX_EVERY, crop_box, face_crop
 
 
 def write_crop(args):

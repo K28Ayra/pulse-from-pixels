@@ -7,6 +7,9 @@ import mediapipe as mp
 import numpy as np
 
 MODEL_PATH = Path("models") / "face_landmarker.task"
+CROP_BOX = 1.5  # crop side relative to the face-oval box, as in rPPG-Toolbox
+# a box that moves every frame adds jitter the deep models react to
+BOX_EVERY = 30
 
 _connections = mp.tasks.vision.FaceLandmarksConnections.FACE_LANDMARKS_FACE_OVAL
 # the oval connections form one closed chain, so their start points in order are the outline
@@ -76,3 +79,21 @@ PATCHES = {
     "chin": [84, 17, 314, 421, 200, 201],
     "face": FACE_OVAL,
 }
+
+
+def crop_box(points):
+    """Square box (left, top, side) around the face oval."""
+    outline = points[FACE_OVAL]
+    centre = (outline.min(axis=0) + outline.max(axis=0)) / 2
+    side = CROP_BOX * (outline.max(axis=0) - outline.min(axis=0)).max()
+    left = int(round(centre[0] - side / 2))
+    top = int(round(centre[1] - side / 2))
+    return left, top, int(round(side))
+
+
+def face_crop(frame, box, size):
+    left, top, side = box
+    # pad so a box hanging over the border still gives a square crop
+    padded = cv2.copyMakeBorder(frame, side, side, side, side, cv2.BORDER_CONSTANT, value=0)
+    crop = padded[top + side:top + 2 * side, left + side:left + 2 * side]
+    return cv2.resize(crop, (size, size), interpolation=cv2.INTER_AREA)
