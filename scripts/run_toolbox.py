@@ -3,6 +3,7 @@
     python scripts/run_toolbox.py               # all jobs
     python scripts/run_toolbox.py POS_CHROM     # one job by name
     python scripts/run_toolbox.py test          # phase 8: test people, both UBFC sets
+    python scripts/run_toolbox.py test ubfc_phys
 
 Each job takes the toolbox's own config, changes only paths (and the device),
 and runs the toolbox's main.py in envs/rppg-toolbox. The toolbox only sees
@@ -27,6 +28,7 @@ import pandas as pd
 import yaml
 
 TOOLBOX = Path("tools") / "rPPG-Toolbox"
+WORKERS = 4  # preprocessing workers, see scripts/toolbox_main.py
 TOOLBOX_PYTHON = Path("envs") / "rppg-toolbox" / "bin" / "python"
 STUBS = Path("toolbox_stubs")
 DATA = Path("data") / "ubfc_rppg"
@@ -145,7 +147,9 @@ def run_job(job, config_path=None, out=OUT):
     if config_path is None:
         config_path = write_config(job, config_name, checkpoint)
     log_path = out / job / "log.txt"
-    command = [str(TOOLBOX_PYTHON.resolve()), "main.py", "--config_file", str(config_path.resolve())]
+    launcher = Path("scripts") / "toolbox_main.py"
+    command = [str(TOOLBOX_PYTHON.resolve()), str(launcher.resolve()), str(WORKERS),
+               "--config_file", str(config_path.resolve())]
     print("running", job, "log in", log_path, flush=True)
     env = dict(os.environ)
     env["PYTHONPATH"] = str(STUBS.resolve())
@@ -157,9 +161,9 @@ def run_job(job, config_path=None, out=OUT):
     return parse_metrics(log_path.read_text(), job)
 
 
-def run_test():
+def run_test(datasets):
     make_test_links()
-    for dataset in ["ubfc_rppg", "ubfc_phys"]:
+    for dataset in datasets:
         out = TEST_OUT / dataset
         for job in DEEP_JOBS:
             config_name, checkpoint = JOBS[job]
@@ -172,8 +176,8 @@ def run_test():
 
 
 def main():
-    if sys.argv[1:] == ["test"]:
-        run_test()
+    if sys.argv[1:2] == ["test"]:
+        run_test(sys.argv[2:] or ["ubfc_rppg", "ubfc_phys"])
         return
     n_dev = make_dev_links()
     print(n_dev, "dev subjects linked in", DEV_LINKS)
