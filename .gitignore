@@ -1,0 +1,23 @@
+data/
+envs/
+tools/
+models/
+outputs/
+.cache/
+.claude/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+*.avi
+*.mp4
+*.mkv
+*.zip
+*.npz
+*.npy
+*.joblib
+*.task
+
+# my own notes
+docs/plan.md

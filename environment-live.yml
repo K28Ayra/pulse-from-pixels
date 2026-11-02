@@ -1,0 +1,17 @@
+# Small environment for the webcam demo on a laptop (Windows works).
+# No torch: the live pipeline is classical signal processing plus MediaPipe.
+name: pulsecam-live
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy=2.2
+  - scipy=1.15
+  - pyyaml=6.0
+  - joblib
+  - scikit-learn=1.6
+  - pip
+  - pip:
+      - opencv-contrib-python==4.10.0.84
+      - mediapipe==1.2.0
+      - -e .

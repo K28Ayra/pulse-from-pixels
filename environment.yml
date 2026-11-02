@@ -1,0 +1,31 @@
+name: pulsecam
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  # numpy 2 here, otherwise pip upgrades it underneath conda for mediapipe
+  - numpy=2.2
+  - scipy=1.15
+  - pandas=2.2
+  - matplotlib=3.10
+  - scikit-learn=1.6
+  - pyyaml=6.0
+  - tqdm
+  - pytest
+  - ipykernel
+  - jupytext
+  - ffmpeg=6
+  # Google Drive downloads of UBFC-rPPG (see README, Data)
+  - rclone
+  - pip
+  - pip:
+      # cu126 so it works with drivers that support CUDA 12.6 at most.
+      # On a machine without a GPU the same wheel just runs on CPU.
+      - --extra-index-url https://download.pytorch.org/whl/cu126
+      - torch==2.7.1
+      # mediapipe pulls in opencv-contrib-python; installing opencv-python
+      # as well gives two packages fighting over cv2
+      - opencv-contrib-python==4.10.0.84
+      - mediapipe==1.2.0
+      - joblib
+      - -e .

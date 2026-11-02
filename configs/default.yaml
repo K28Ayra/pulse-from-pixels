@@ -1,0 +1,78 @@
+# true  = read the webcam, show heart rate on screen, write nothing to disk
+# false = run on dataset files under data_dir
+live_mode: false
+
+data_dir: data
+output_dir: outputs
+
+camera:
+  index: 0
+  width: 640
+  height: 480
+  fps: 30
+
+window:
+  length_s: 10
+  step_s: 1
+
+# 42-210 bpm, i.e. 0.7-3.5 Hz
+hr_band_bpm: [42, 210]
+
+reference:
+  # a window of contact PPG is only trusted if there are enough beats, the
+  # beat-to-beat intervals are regular, peak HR agrees with spectral HR, and
+  # the recording has no hole longer than max_gap_s (UBFC has holes up to 1 s)
+  min_beats: 5
+  max_ibi_cv: 0.15
+  max_disagree_bpm: 5
+  max_gap_s: 0.3
+  # looser reference for wrist BVP during movement (UBFC-Phys): the spectral
+  # peak, kept when its SNR is at least this many dB
+  loose_min_snr_db: 0.0
+
+# made once while the raw UBFC-Phys video is still on disk (phase 6 uses them)
+stress_variants:
+  bitrates_kbps: [4000, 2000, 1000, 500, 250]
+  light_gains: [0.5, 0.25]
+  # sensor noise added after dimming, in 8-bit pixel units
+  light_noise: 2.0
+
+# size of the saved lossless face crop, the input size of the toolbox deep models
+crop_size: 72
+
+# chosen in phase 3 by scripts/tune_phase3.py, docs/phase3.md
+tracking:
+  motion_tau: 1.0e-4
+  sigma_bpm: 2.0
+  lag_s: 5
+  jump: 0.01
+  # fused spectrum raised to this power before tracking
+  sharpen: 2
+  # these move when people talk
+  drop_patches: [jaw_left, jaw_right, chin]
+
+# FactorizePhys as the only signal, chosen in phase 5 by scripts/tune_phase5.py
+deep_tracking:
+  sigma_bpm: 2.0
+  lag_s: 5
+  jump: 0.0
+  sharpen: 2
+
+# chosen in phase 4, docs/phase4.md: share of the fused spectrum within 5 bpm of the
+# tracked HR. Below the cutoff the reading is flagged as not to be trusted.
+quality:
+  score: share_at_hr
+  cutoff: 0.44
+
+# UBFC-Phys recordings excluded in rPPG-Toolbox's configs (commit b7500b8, no reasons given)
+ubfc_phys_toolbox_excluded: [
+  s3_T1, s8_T1, s9_T1, s26_T1, s28_T1, s30_T1, s31_T1, s32_T1,
+  s33_T1, s40_T1, s52_T1, s53_T1, s54_T1, s56_T1, s1_T2, s4_T2,
+  s6_T2, s8_T2, s9_T2, s11_T2, s12_T2, s13_T2, s14_T2, s19_T2,
+  s21_T2, s22_T2, s25_T2, s26_T2, s27_T2, s28_T2, s31_T2, s32_T2,
+  s33_T2, s35_T2, s38_T2, s39_T2, s41_T2, s42_T2, s45_T2, s47_T2,
+  s48_T2, s52_T2, s53_T2, s55_T2, s5_T3, s8_T3, s9_T3, s10_T3,
+  s13_T3, s14_T3, s17_T3, s22_T3, s25_T3, s26_T3, s28_T3, s30_T3,
+  s32_T3, s33_T3, s35_T3, s37_T3, s40_T3, s47_T3, s48_T3, s49_T3,
+  s50_T3, s52_T3, s53_T3
+]

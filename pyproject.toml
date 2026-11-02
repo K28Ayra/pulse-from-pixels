@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pulsecam"
+version = "0.0.1"
+description = "Heart rate from face video (rPPG)"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+test = ["pytest", "opencv-python-headless"]
+
+[tool.setuptools]
+packages = ["pulsecam"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
