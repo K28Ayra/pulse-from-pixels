@@ -7,7 +7,8 @@ Needs the toolbox env. Writes <recording>_deep.npy next to each crop, one value 
 frame for UBFC-rPPG and on a 30 Hz grid for UBFC-Phys, which runs at 35 fps. Frames
 after the last full chunk are lost. Stress-variant crops (<name>_<variant>_crop.mkv)
 are run too. Existing outputs are skipped: delete them to run again.
-Only dev people unless names are given after "run".
+Only dev people unless names are given after "run". "run test" does the test
+people of both UBFC sets and the MPU-rPPG sample (60 fps, taken on a 30 Hz grid).
 """
 
 import json
@@ -99,10 +100,14 @@ def crops_of(folder, stem):
 
 
 def recordings(names):
+    part = "dev"
+    if names == ["test"]:
+        part = "test"
+        names = []
     jobs = []
     rppg = Path("data/ubfc_rppg/derived")
     split = json.loads(Path("splits/ubfc_rppg.json").read_text())
-    for name in split["dev"]:
+    for name in split[part]:
         if names and name not in names:
             continue
         times = np.load(rppg / (name + ".npz"))["times"]
@@ -111,14 +116,20 @@ def recordings(names):
             jobs.append((path, fps, False))
     phys = Path("data/ubfc_phys/derived")
     split = json.loads(Path("splits/ubfc_phys.json").read_text())
-    for person in split["dev"]:
+    for person in split[part]:
         if names and person not in names:
             continue
         for task in ["T1", "T2", "T3"]:
             stem = person + "_" + task
+            if not (phys / (stem + "_raw.npz")).exists():
+                print(stem, "not reduced yet, skipped", flush=True)
+                continue
             fps = float(np.load(phys / (stem + "_raw.npz"))["fps"])
             for path in crops_of(phys, stem):
                 jobs.append((path, fps, True))
+    if part == "test":
+        for path in sorted(Path("data/mpu_rppg_sample/derived").glob("*_crop.mkv")):
+            jobs.append((path, 60.0, True))
     return jobs
 
 

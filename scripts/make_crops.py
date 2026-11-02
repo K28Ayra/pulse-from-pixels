@@ -4,6 +4,7 @@
 """
 
 import json
+import sys
 from multiprocessing import Pool
 from pathlib import Path
 
@@ -48,13 +49,16 @@ def main():
     size = cfg["crop_size"]
     jobs = []
     root = Path(cfg["data_dir"]) / "ubfc_rppg"
-    for name in json.loads(Path("splits/ubfc_rppg.json").read_text())["dev"]:
+    # "test": only the UBFC-rPPG test people (UBFC-Phys test crops come from reduce_ubfc_phys.py)
+    part = "test" if sys.argv[1:] == ["test"] else "dev"
+    for name in json.loads(Path("splits/ubfc_rppg.json").read_text())[part]:
         video = root / "DATASET_2" / name / "vid.avi"
         derived = root / "derived"
         jobs.append((video, derived / (name + ".npz"), derived / (name + "_crop.mkv"), size))
     base = Path(cfg["data_dir"]) / "ubfc_phys"
     derived = base / "derived"
-    for person in json.loads(Path("splits/ubfc_phys.json").read_text())["dev"]:
+    phys_people = [] if part == "test" else json.loads(Path("splits/ubfc_phys.json").read_text())["dev"]
+    for person in phys_people:
         for task in UBFC_PHYS_TASKS:
             stem = person + "_" + task
             video = base / "raw" / person / ("vid_" + stem + ".avi")

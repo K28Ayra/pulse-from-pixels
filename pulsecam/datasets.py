@@ -117,3 +117,42 @@ def load_ubfc_phys_task(root, name, task):
         "ppg": bvp,
     }
     return task_data
+
+
+MPU_FPS = 60.0
+
+
+def csv_rows(path):
+    with open(path) as f:
+        return sum(1 for line in f) - 1
+
+
+def list_mpu_recordings(root):
+    """(name, video, csv) for each MPU-rPPG sample video. The file numbers don't
+    match, so a video is paired with the csv that has one row per frame."""
+    root = Path(root)
+    by_rows = {}
+    for path in sorted(root.glob("*_Output.csv")):
+        by_rows[csv_rows(path)] = path
+    recordings = []
+    for video in sorted(root.glob("*_Output.mp4")):
+        n_frames = count_frames(video)
+        if n_frames in by_rows:
+            name = "mpu" + video.name.split("_")[0]
+            recordings.append((name, video, by_rows[n_frames]))
+    return recordings
+
+
+def load_mpu_recording(video_path, csv_path):
+    """Video path and the finger PPG, one sample per frame at 60 fps.
+
+    The csv columns are Count, PPG, HR, SPO2; HR is the oximeter's own number.
+    """
+    table = np.loadtxt(csv_path, delimiter=",", skiprows=1, ndmin=2)
+    return {
+        "video_path": Path(video_path),
+        "fps": MPU_FPS,
+        "ppg_times": np.arange(len(table)) / MPU_FPS,
+        "ppg": table[:, 1],
+        "device_hr": table[:, 2],
+    }

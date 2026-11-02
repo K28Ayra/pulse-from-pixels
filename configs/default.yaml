@@ -2,6 +2,10 @@
 # false = run on dataset files under data_dir
 live_mode: false
 
+# set to true and commit once nothing changes any more; scripts/evaluate_phase8.py test
+# refuses to run before that
+frozen: false
+
 data_dir: data
 output_dir: outputs
 
