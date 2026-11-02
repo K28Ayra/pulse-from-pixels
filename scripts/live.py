@@ -81,6 +81,9 @@ def main():
     fps = 0.0
     last = time.perf_counter()
     started = None
+    n_frames = 0
+    first_frame = None
+    readings = []
     while True:
         ok, frame = capture.read()
         if not ok:
@@ -94,13 +97,16 @@ def main():
             time_s = now - started
         fps = 0.9 * fps + 0.1 / max(now - last, 1e-6)
         last = now
+        n_frames += 1
+        if first_frame is None:
+            first_frame = now
 
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         new = heart.push(rgb, time_s)
         if new is not None:
             reading = new
-            if args.no_window:
-                print(round(time_s, 1), "s", round(reading["hr"]), "bpm", "ok" if reading["trusted"] else "not trusted")
+            readings.append(new)
+            print(round(time_s, 1), "s", round(reading["hr"]), "bpm", "ok" if reading["trusted"] else "not trusted")
         if heart.status == "looking for a face":
             reading = None
 
@@ -113,6 +119,14 @@ def main():
     capture.release()
     face.close()
     cv2.destroyAllWindows()
+
+    if n_frames > 1:
+        seconds = last - first_frame
+        print(n_frames, "frames in", round(seconds, 1), "s:", round((n_frames - 1) / seconds, 1), "fps on average")
+    if readings:
+        hrs = [r["hr"] for r in readings]
+        trusted = sum(r["trusted"] for r in readings)
+        print(len(readings), "readings, median", round(float(np.median(hrs))), "bpm,", trusted, "trusted")
 
 
 if __name__ == "__main__":
