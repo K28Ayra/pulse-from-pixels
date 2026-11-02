@@ -34,7 +34,7 @@ conda activate pulsecam-live
 
 ## Data
 
-Nothing in `data/` goes into git. Put things here:
+Nothing in `data/` has been pushed to github. Put things here:
 
 ```
 data/
@@ -44,16 +44,10 @@ data/
   mpu_rppg_sample/
 ```
 
-- UBFC-rPPG (DATASET_2, 42 people, about 75 GB) is a Google Drive folder linked from https://sites.google.com/view/ybenezeth/ubfcrppg. Normal downloads hit "quota exceeded". rclone with your own Google login works:
-
-  ```bash
-  rclone authorize "drive"     # on a machine with a browser, gives you a token
-  RCLONE_CONFIG=.cache/rclone.conf rclone config create gdrive drive scope=drive token='<token>'
-  scripts/download_ubfc_drive.sh
-  ```
+- UBFC-rPPG (DATASET_2, 42 people, about 75 GB) is a Google Drive folder linked from https://sites.google.com/view/ybenezeth/ubfcrppg.
 
   Subjects 21 and 27 didn't agree to their faces being shown, so don't put them in figures.
-- UBFC-Phys is at https://doi.org/10.21227/5da0-7344 (free IEEE DataPort account). I use s1 to s12. Each person is about 15 GB, so I shrink them after unzipping (see below).
+- UBFC-Phys is at https://doi.org/10.21227/5da0-7344 (free IEEE DataPort account). I use s1 to s12. Each person is about 15 GB, so just shrink them after unzipping (see below).
 - MPU-rPPG sample: `scripts/download_mpu.sh`. Test only.
 
 The dev/test splits in `splits/` were made before I opened a single video. Don't regenerate them.
