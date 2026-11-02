@@ -12,7 +12,7 @@ It runs the phase 5 winner, FactorizePhys with the tracker. The app env has no t
 
 | Target | Result | |
 |---|---|---|
-| >= 30 fps at 640x480 on a laptop CPU | 163 fps flat out on 4 cores of a Xeon Gold 5317, 30 fps paced with nothing dropped | pass here, laptop not checked |
+| >= 30 fps at 640x480 on a laptop CPU | 163 fps flat out on 4 cores of a Xeon Gold 5317, 30 fps paced with nothing dropped | pass here, fps on a laptop not measured |
 | first HR within 10 s | 6.0 to 7.0 s on all 30 dev people | pass |
 | privacy test (no file writes, no sockets) | `tests/test_privacy.py` passes | pass |
 
@@ -72,7 +72,8 @@ Frames never leave memory. The app keeps the last 161 face crops (72x72) and 30 
 
 ## Not done
 
-- No laptop test yet. All the speed numbers are from 4 cores of a Xeon Gold 5317.
+- One short try on my laptop (i5-1135G7, 8 GB, Windows, built-in webcam). It ran and showed about 94 bpm while I counted 99 at my wrist over a minute. The flag said "not trusted" for most of it and went green only once, at 92. I didn't note the fps, so the speed numbers above are still from 4 cores of a Xeon Gold 5317. A hand count is a rough check, not a reference.
+- The flag cutoff (0.44) was set on clean dataset video. A webcam stream is compressed, and phase 6 already showed the flag dropping more than half the windows on compressed video, so mostly grey on a webcam fits that. I haven't retuned it.
 - No real webcam either, since this machine doesn't have one. Webcams often drop to 15 fps in dim light. The model was trained on 30 fps video, and at 15 fps the first number would take 11 s. I haven't tried resampling.
 - The classical pipeline isn't in the app. It would need its own windowed POS and CHROM, and phase 6 says it's worse on compressed video anyway.
 - `models/factorizephys.onnx` isn't in git. It's made from the rPPG-Toolbox checkpoint, which comes under the toolbox's own licence (a Responsible AI License, v1.1). `./setup_tools.sh --toolbox-env` builds it. To run the app on a laptop without that env, you have to copy `models/` over.
