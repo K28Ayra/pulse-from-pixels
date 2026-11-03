@@ -98,6 +98,17 @@ python scripts/live.py --video data/ubfc_rppg/DATASET_2/subject1/vid.avi --no-wi
 python scripts/evaluate_phase7.py replay
 ```
 
+The test run (phase 8) refuses to start unless `frozen: true` is committed, and only runs once:
+
+```bash
+python scripts/reduce_ubfc_phys.py s4 s6 s7 s10
+python scripts/reduce_mpu.py
+python scripts/make_crops.py test
+envs/rppg-toolbox/bin/python scripts/run_deep.py run test
+python scripts/run_toolbox.py test
+python scripts/evaluate_phase8.py test
+```
+
 ## How it's put together
 
 `pulsecam/` is the package and `scripts/` just calls it. All settings live in `configs/default.yaml`. The tracker settings, the quality cutoff and the list of UBFC-Phys recordings that rPPG-Toolbox excludes are all there.
@@ -156,4 +167,10 @@ Same dev videos, re-encoded with x264 from 4000 down to 250 kbps and dimmed to h
 
 [docs/phase7.md](docs/phase7.md)
 
-`scripts/live.py` runs FactorizePhys through onnxruntime, so there's no torch. The first number shows up after 6 s, because the first windows are shorter. Played back through the live code, the dev videos come out at 0.80 bpm against 0.77 offline. On 4 CPU cores it does 163 fps flat out, and paced at 30 fps no frame gets dropped, because the model runs in its own thread. I haven't tried it on a laptop or a real webcam yet.
+`scripts/live.py` runs FactorizePhys through onnxruntime, so there's no torch. The first number shows up after 6 s, because the first windows are shorter. Played back through the live code, the dev videos come out at 0.80 bpm against 0.77 offline. On 4 CPU cores it does 163 fps flat out, and paced at 30 fps no frame gets dropped, because the model runs in its own thread. On my laptop's webcam it read about 94 against 99 counted by hand, and most readings were flagged as not trusted. I didn't note the fps.
+
+### Phase 8: test set
+
+[docs/phase8.md](docs/phase8.md)
+
+The config was frozen and committed, then the 12 UBFC-rPPG test subjects, UBFC-Phys s4, s6, s7 and s10 and four MPU-rPPG videos were run once. Every target passed. On UBFC-rPPG, FactorizePhys with my tracker gets 0.96 bpm against 1.14 for POS, and on UBFC-Phys T1 it gets 1.26. On UBFC-Phys it beats the toolbox's own FactorizePhys run, 2.41 against 2.68, but that's only 4 people. On this clean test video the classical pipeline is a little better than deep. MPU-rPPG doesn't work for any method (13.4 bpm for deep), and the flag can't tell good windows from bad there.
