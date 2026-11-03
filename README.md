@@ -167,7 +167,7 @@ Same dev videos, re-encoded with x264 from 4000 down to 250 kbps and dimmed to h
 
 [docs/phase7.md](docs/phase7.md)
 
-`scripts/live.py` runs FactorizePhys through onnxruntime, so there's no torch. The first number shows up after 6 s, because the first windows are shorter. Played back through the live code, the dev videos come out at 0.80 bpm against 0.77 offline. On 4 CPU cores it does 163 fps flat out, and paced at 30 fps no frame gets dropped, because the model runs in its own thread. On my laptop's webcam it read about 94 against 99 counted by hand, and most readings were flagged as not trusted. I didn't note the fps.
+`scripts/live.py` runs FactorizePhys through onnxruntime, so there's no torch. The first number shows up after 6 s, because the first windows are shorter. Played back through the live code, the dev videos come out at 0.80 bpm against 0.77 offline. On 4 CPU cores it does 163 fps flat out, and paced at 30 fps no frame gets dropped, because the model runs in its own thread. On my laptop's webcam it read about 94 against 99 counted by hand, and most readings were flagged as not trusted. It kept up with the webcam at 30 fps.
 
 ### Phase 8: test set
 
